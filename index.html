@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Perfectly Aligned Birthday Page</title>
+
+<style>
+/* CLEAN ULTRA BEAUTIFUL BACKGROUND */
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: "Poppins", sans-serif;
+    background: radial-gradient(circle at center, #ff8df4, #6a00ff, #12001f);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* BUTTON CENTER PERFECT */
+#startBtn {
+    padding: 22px 55px;
+    font-size: 30px;
+    font-weight: 900;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(45deg, #ffeb3b, #ff9100);
+    box-shadow: 0 0 25px #ffeb3b;
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
+    z-index: 50;
+}
+#startBtn:hover {
+    transform: scale(1.1);
+}
+
+/* CENTER TEXT FIXED IN CENTER ALWAYS */
+.center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    display: none;
+    z-index: 30;
+}
+.center-text h1 {
+    font-size: 70px;
+    text-shadow: 0 0 25px #ff00dd;
+}
+.center-text h2 {
+    font-size: 30px;
+}
+
+/* FIREWORKS CANVAS FIXED FULLSCREEN */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* MOBILE FIX */
+@media (max-width: 600px) {
+    .center-text h1 { font-size: 40px; }
+    .center-text h2 { font-size: 20px; }
+    #startBtn { font-size: 22px; padding: 15px 30px; }
+}
+</style>
+</head>
+
+<body>
+
+<button id="startBtn">CLICK ME</button>
+
+<div class="center-text" id="textBox">
+    <h1>🎉 HAPPY BIRTHDAY ANIKA 🎉</h1>
+    <h2>Wishing you unlimited happiness 💖</h2>
+</div>
+
+<audio id="song" src="birthday.mp3"></audio>
+
+<canvas id="fireworks"></canvas>
+
+<script>
+/* FIREWORKS ENGINE */
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+let w = canvas.width = window.innerWidth;
+let h = canvas.height = window.innerHeight;
+let fireworks = [];
+let fireStart = false;
+
+class Firework {
+    constructor() {
+        this.x = Math.random() * w;
+        this.y = h;
+        this.targetY = Math.random() * (h / 2);
+        this.speed = Math.random() * 3 + 2;
+        this.exploded = false;
+        this.particles = [];
+        this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+    }
+
+    update() {
+        if (!this.exploded) {
+            this.y -= this.speed;
+            if (this.y < this.targetY) {
+                this.exploded = true;
+                for (let i = 0; i < 80; i++) {
+                    this.particles.push(new Particle(this.x, this.y, this.color));
+                }
+            }
+        }
+        this.particles.forEach(p => p.update());
+    }
+
+    draw() {
+        if (!this.exploded) {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, 4, 4);
+        }
+        this.particles.forEach(p => p.draw());
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.size = Math.random() * 3 + 1;
+        this.speedX = Math.random() * 6 - 3;
+        this.speedY = Math.random() * 6 - 3;
+        this.gravity = 0.05;
+        this.life = 120;
+    }
+
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY + this.gravity;
+        this.life--;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life / 120;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+}
+
+function animate() {
+    ctx.clearRect(0, 0, w, h);
+
+    if (fireStart && Math.random() < 0.05) {
+        fireworks.push(new Firework());
+    }
+
+    fireworks = fireworks.filter(f => !f.exploded || f.particles.some(p => p.life > 0));
+    fireworks.forEach(f => { f.update(); f.draw(); });
+
+    requestAnimationFrame(animate);
+}
+animate();
+
+/* START BUTTON */
+document.getElementById("startBtn").onclick = () => {
+    fireStart = true;
+    document.getElementById("song").play();
+    document.getElementById("startBtn").style.display = "none";
+    document.getElementById("textBox").style.display = "block";
+};
+
+window.addEventListener("resize", () => {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
